@@ -1,66 +1,324 @@
 <!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CloudSSL</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b1020;
+      color: #e8ecf3;
+      margin: 0;
+    }
+    .wrap {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 16px;
+    }
+    .card {
+      background: #121933;
+      border: 1px solid #243055;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px 12px;
+      border-radius: 10px;
+      border: 1px solid #31406f;
+      background: #0f1630;
+      color: #fff;
+    }
+    button {
+      cursor: pointer;
+      background: #3b82f6;
+      border: none;
+    }
+    button.secondary {
+      background: #1f2937;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .grid3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    label {
+      display: block;
+      font-size: 14px;
+      margin-bottom: 6px;
+      color: #b8c2de;
+    }
+    h1, h2 {
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    th, td {
+      border-bottom: 1px solid #243055;
+      padding: 10px 8px;
+      text-align: left;
+      font-size: 14px;
+      vertical-align: top;
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .muted {
+      color: #9ca3af;
+      font-size: 13px;
+    }
+    .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+    .switches label {
+      margin-bottom: 8px;
+      color: #e8ecf3;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>CloudSSL</h1>
+      <p class="muted">Cloudflare Pages + Functions + D1 + R2 的证书管理演示版。</p>
+    </div>
+
+    <div class="card">
+      <h2>添加域名</h2>
+      <form id="domainForm">
+        <div class="grid">
+          <div>
+            <label>主域名</label>
+            <input name="domain" placeholder="example.com" required />
+          </div>
+          <div>
+            <label>SANs（逗号分隔）</label>
+            <input name="sans" placeholder="www.example.com,api.example.com" />
+          </div>
+        </div>
+
+        <div class="grid3" style="margin-top:12px;">
+          <div>
+            <label>ACME 目录</label>
+            <select name="acme_directory">
+              <option value="https://acme-v02.api.letsencrypt.org/directory">Let's Encrypt 正式</option>
+              <option value="https://acme-staging-v02.api.letsencrypt.org/directory">Let's Encrypt 测试</option>
+            </select>
+          </div>
+          <div>
+            <label>ACME 账号名</label>
+            <input name="acme_account_name" value="default" />
+          </div>
+          <div>
+            <label>验证模式</label>
+            <select name="validation_mode">
+              <option value="manual">手动 DNS</option>
+              <option value="api">DNS API</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid3" style="margin-top:12px;">
+          <div>
+            <label>账号密钥算法</label>
+            <select name="account_key_algorithm">
+              <option value="ecdsa-p256">ECDSA P-256</option>
+              <option value="ecdsa-p384">ECDSA P-384</option>
+              <option value="rsa-2048">RSA 2048</option>
+              <option value="rsa-4096">RSA 4096</option>
+            </select>
+          </div>
+          <div>
+            <label>证书密钥算法</label>
+            <select name="cert_key_algorithm">
+              <option value="ecdsa-p256">ECDSA P-256</option>
+              <option value="ecdsa-p384">ECDSA P-384</option>
+              <option value="rsa-2048">RSA 2048</option>
+              <option value="rsa-4096">RSA 4096</option>
+            </select>
+          </div>
+          <div>
+            <label>DNS Provider</label>
+            <input name="dns_provider" placeholder="cloudflare / dnspod / aliyun" />
+          </div>
+        </div>
+
+        <div class="grid" style="margin-top:12px;">
+          <div>
+            <label>自定义 DNS 服务器 1</label>
+            <input name="dns_server_1" placeholder="1.1.1.1" />
+          </div>
+          <div>
+            <label>自定义 DNS 服务器 2</label>
+            <input name="dns_server_2" placeholder="8.8.8.8" />
+          </div>
+        </div>
+
+        <div class="grid" style="margin-top:12px;">
+          <div>
+            <label>DNS API Token</label>
+            <input name="dns_api_token" placeholder="可留空" />
+          </div>
+          <div>
+            <label>开关</label>
+            <div class="card switches" style="padding:12px; margin:0;">
+              <label><input type="checkbox" name="auto_renew" checked style="width:auto;"> 自动续签</label>
+              <label><input type="checkbox" name="disable_cname" style="width:auto;"> 禁用 CNAME 跟随</label>
+              <label><input type="checkbox" name="skip_dns_precheck" style="width:auto;"> 跳过平台 DNS 预检查</label>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:12px;">
+          <button type="submit">保存域名</button>
+        </div>
+      </form>
+      <div id="formMsg" class="muted" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <h2 style="margin:0;">域名列表</h2>
+        <button class="secondary" style="width:auto;" id="refreshBtn">刷新</button>
+      </div>
+      <div id="domainTable" class="muted" style="margin-top:12px;">加载中...</div>
+    </div>
+  </div>
+
+  <script>
+    async function api(path, options) {
+      const res = await fetch(path, Object.assign({
+        headers: { "Content-Type": "application/json" }
+      }, options || {}));
+      return await res.json();
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    async function loadDomains() {
+      const data = await api("/api/domains");
+      const list = data.items || [];
+      const box = document.getElementById("domainTable");
+
+      if (!list.length) {
+        box.innerHTML = '<p class="muted">暂无数据</p>';
+        return;
+      }
+
+      let rows = "";
+      for (const x of list) {
+        rows += `
+          <tr>
+            <td>${escapeHtml(x.id)}</td>
+            <td class="mono">${escapeHtml(x.domain)}</td>
+            <td>${escapeHtml(x.status)}</td>
+            <td>${escapeHtml(x.expires_at || "-")}</td>
+            <td>${x.auto_renew ? "是" : "否"}</td>
+            <td>
+              <div class="row">
+                <button style="width:auto;" onclick="startIssue(${Number(x.id)})">开始签发</button>
+                <button class="secondary" style="width:auto;" onclick="continueIssue(${Number(x.id)})">继续验证</button>
+                <button class="secondary" style="width:auto;" onclick="showCert(${Number(x.id)})">查看证书</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      box.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>域名</th>
+              <th>状态</th>
+              <th>到期时间</th>
               <th>自动续签</th>
               <th>操作</th>
             </tr>
           </thead>
-          <tbody>
-            ${list.map(x => `
-              <tr>
-                <td>${x.id}</td>
-                <td class="mono">${x.domain}</td>
-                <td>${x.status}</td>
-                <td>${x.expires_at || '-'}</td>
-                <td>${x.auto_renew ? '是' : '否'}</td>
-                <td>
-                  <div class="row">
-                    <button style="width:auto;" onclick="startIssue(${x.id})">开始签发</button>
-                    <button class="secondary" style="width:auto;" onclick="continueIssue(${x.id})">继续验证</button>
-                  </div>
-                </td>
-              </tr>
-            `).join('')}
-          </tbody>
+          <tbody>${rows}</tbody>
         </table>
       `;
     }
 
     async function startIssue(id) {
-      const data = await api(`/api/domains/${id}/issue`, { method: 'POST' });
+      const data = await api("/api/domains/" + id + "/issue", { method: "POST" });
       alert(JSON.stringify(data, null, 2));
       loadDomains();
     }
 
     async function continueIssue(id) {
-      const data = await api(`/api/domains/${id}/finalize`, { method: 'POST' });
+      const data = await api("/api/domains/" + id + "/finalize", { method: "POST" });
       alert(JSON.stringify(data, null, 2));
       loadDomains();
     }
 
-    document.getElementById('domainForm').addEventListener('submit', async (e) => {
+    async function showCert(id) {
+      const data = await api("/api/domains/" + id + "/cert");
+      alert(JSON.stringify(data, null, 2));
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", function () {
+      loadDomains();
+    });
+
+    document.getElementById("domainForm").addEventListener("submit", async function (e) {
       e.preventDefault();
+
       const fd = new FormData(e.target);
       const payload = {
-        domain: fd.get('domain'),
-        sans: (fd.get('sans') || '').toString().split(',').map(s => s.trim()).filter(Boolean),
-        acme_directory: fd.get('acme_directory'),
-        acme_account_name: fd.get('acme_account_name'),
-        account_key_algorithm: fd.get('account_key_algorithm'),
-        cert_key_algorithm: fd.get('cert_key_algorithm'),
-        auto_renew: fd.get('auto_renew') === 'on',
-        disable_cname: fd.get('disable_cname') === 'on',
-        skip_dns_precheck: fd.get('skip_dns_precheck') === 'on',
-        dns_server_1: fd.get('dns_server_1'),
-        dns_server_2: fd.get('dns_server_2'),
-        validation_mode: fd.get('validation_mode'),
-        dns_provider: fd.get('dns_provider'),
-        dns_api_token: fd.get('dns_api_token')
+        domain: fd.get("domain"),
+        sans: String(fd.get("sans") || "")
+          .split(",")
+          .map(function (s) { return s.trim(); })
+          .filter(Boolean),
+        acme_directory: fd.get("acme_directory"),
+        acme_account_name: fd.get("acme_account_name"),
+        account_key_algorithm: fd.get("account_key_algorithm"),
+        cert_key_algorithm: fd.get("cert_key_algorithm"),
+        auto_renew: fd.get("auto_renew") === "on",
+        disable_cname: fd.get("disable_cname") === "on",
+        skip_dns_precheck: fd.get("skip_dns_precheck") === "on",
+        dns_server_1: fd.get("dns_server_1"),
+        dns_server_2: fd.get("dns_server_2"),
+        validation_mode: fd.get("validation_mode"),
+        dns_provider: fd.get("dns_provider"),
+        dns_api_token: fd.get("dns_api_token")
       };
-      const data = await api('/api/domains', {
-        method: 'POST',
+
+      const data = await api("/api/domains", {
+        method: "POST",
         body: JSON.stringify(payload)
       });
-      document.getElementById('formMsg').textContent = data.ok ? '保存成功' : (data.error || '保存失败');
-      e.target.reset();
+
+      document.getElementById("formMsg").textContent = data.ok
+        ? "保存成功"
+        : (data.error || "保存失败");
+
+      if (data.ok) {
+        e.target.reset();
+      }
+
       loadDomains();
     });
 
