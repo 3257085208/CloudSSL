@@ -1,0 +1,15 @@
+{
+  "name": "cf-acme-platform",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev public --d1 DB --r2 CERTS",
+    "deploy": "wrangler pages deploy public",
+    "db:init": "wrangler d1 execute acme_platform --file=./schema.sql",
+    "cf:typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "wrangler": "^4.13.2"
+  }
+}
