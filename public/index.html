@@ -1,0 +1,70 @@
+<!doctype html>
+              <th>自动续签</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${list.map(x => `
+              <tr>
+                <td>${x.id}</td>
+                <td class="mono">${x.domain}</td>
+                <td>${x.status}</td>
+                <td>${x.expires_at || '-'}</td>
+                <td>${x.auto_renew ? '是' : '否'}</td>
+                <td>
+                  <div class="row">
+                    <button style="width:auto;" onclick="startIssue(${x.id})">开始签发</button>
+                    <button class="secondary" style="width:auto;" onclick="continueIssue(${x.id})">继续验证</button>
+                  </div>
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    async function startIssue(id) {
+      const data = await api(`/api/domains/${id}/issue`, { method: 'POST' });
+      alert(JSON.stringify(data, null, 2));
+      loadDomains();
+    }
+
+    async function continueIssue(id) {
+      const data = await api(`/api/domains/${id}/finalize`, { method: 'POST' });
+      alert(JSON.stringify(data, null, 2));
+      loadDomains();
+    }
+
+    document.getElementById('domainForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const payload = {
+        domain: fd.get('domain'),
+        sans: (fd.get('sans') || '').toString().split(',').map(s => s.trim()).filter(Boolean),
+        acme_directory: fd.get('acme_directory'),
+        acme_account_name: fd.get('acme_account_name'),
+        account_key_algorithm: fd.get('account_key_algorithm'),
+        cert_key_algorithm: fd.get('cert_key_algorithm'),
+        auto_renew: fd.get('auto_renew') === 'on',
+        disable_cname: fd.get('disable_cname') === 'on',
+        skip_dns_precheck: fd.get('skip_dns_precheck') === 'on',
+        dns_server_1: fd.get('dns_server_1'),
+        dns_server_2: fd.get('dns_server_2'),
+        validation_mode: fd.get('validation_mode'),
+        dns_provider: fd.get('dns_provider'),
+        dns_api_token: fd.get('dns_api_token')
+      };
+      const data = await api('/api/domains', {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
+      document.getElementById('formMsg').textContent = data.ok ? '保存成功' : (data.error || '保存失败');
+      e.target.reset();
+      loadDomains();
+    });
+
+    loadDomains();
+  </script>
+</body>
+</html>
