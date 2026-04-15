@@ -6,13 +6,13 @@
     {
       "binding": "DB",
       "database_name": "acme_platform",
-      "database_id": "你的D1数据库ID"
+      "database_id": "96138eae-3467-4c56-8505-7b8367bf3510"
     }
   ],
   "r2_buckets": [
     {
       "binding": "CERTS",
-      "bucket_name": "acme-certs"
+      "bucket_name": "cloudssl"
     }
   ],
   "vars": {
