@@ -338,7 +338,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       return await runRenewCheck(env);
     }
 
-    return json({ ok: false, error: "Not Found" }, 404);
+    return context.next();
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "服务器内部错误";
