@@ -301,8 +301,13 @@ export const onRequest: PagesFunction<Env> = async (context) => {
   const path = url.pathname;
   const method = request.method.toUpperCase();
 
-  if (method === "OPTIONS") {
+  if (method === "OPTIONS" && path.startsWith("/api/")) {
     return new Response(null, { status: 204 });
+  }
+
+  // 非 /api 请求直接放行，让 Pages 去返回静态文件
+  if (!path.startsWith("/api/")) {
+    return context.next();
   }
 
   try {
@@ -338,7 +343,7 @@ export const onRequest: PagesFunction<Env> = async (context) => {
       return await runRenewCheck(env);
     }
 
-    return context.next();
+    return json({ ok: false, error: "API Not Found" }, 404);
   } catch (error) {
     const message =
       error instanceof Error ? error.message : "服务器内部错误";
