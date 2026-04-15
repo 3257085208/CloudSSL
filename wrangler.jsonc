@@ -1,27 +1,21 @@
 {
-  "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "cf-acme-platform",
+  "name": "cloudssl",
   "compatibility_date": "2026-04-15",
   "pages_build_output_dir": "public",
   "d1_databases": [
     {
       "binding": "DB",
       "database_name": "acme_platform",
-      "database_id": "cloudssl"
+      "database_id": "你的D1数据库ID"
     }
   ],
   "r2_buckets": [
     {
       "binding": "CERTS",
-      "bucket_name": "cloudssl"
+      "bucket_name": "acme-certs"
     }
   ],
   "vars": {
-    "APP_NAME": "CF ACME Platform"
-  },
-  "triggers": {
-    "crons": [
-      "0 3 * * *"
-    ]
+    "APP_NAME": "CloudSSL"
   }
 }
